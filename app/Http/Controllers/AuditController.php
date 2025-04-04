@@ -38,96 +38,159 @@ class AuditController extends Controller
             return redirect()->back()->with('error', 'Invalid input. Please enter all required fields.');
         }
     
-        // Extract values
-        $tracking = trim($lines[0]);
-        $serial = trim($lines[1]);
-        $basket = trim($lines[2]);
-        $productControl = trim($lines[3]);
-        $title = trim($lines[4]);
+        // Initialize variables to hold the detected data
+        $tracking = '';
+        $serial = '';
+        $basket = '';
+        $productControl = '';
+        $title = '';
     
-        // Validate tracking number (at least 12 characters)
-        if (strlen($tracking) < 12) {
-            return redirect()->back()->with('error', 'Tracking number must be at least 12 characters.');
+        // Loop through the lines and try to detect each field
+        foreach ($lines as $line) {
+            $line = trim($line); // Clean the line
+    
+            // Detect tracking number (12 or more digits)
+            if (preg_match('/^\d{12,}$/', $line)) {
+                $tracking = $line;
+            }
+            // Detect serial number (16 characters, combination of capital letters and numbers)
+            elseif (strlen($line) == 16 && preg_match('/^[A-Z0-9]+$/', $line)) {
+                $serial = $line;
+            }
+            // Detect basket number (starts with "BKT")
+            elseif (preg_match('/^BKT[a-zA-Z0-9]+$/', $line)) {
+                $basket = $line;
+            }
+            // Detect product control number (starts with "PCN")
+            elseif (preg_match('/^PCN[a-zA-Z0-9]+$/', $line)) {
+                $productControl = $line;
+            }
+            // Detect title (exactly "TITLE")
+            elseif (strcasecmp($line, 'TITLE') == 0) {
+                $title = $line;
+            }
+            // If nothing matches, assume it's the title
+            else {
+                $title = $line;
+            }
         }
     
-        // Find existing tracking records that end with the provided 12-digit tracking string
-        $trackingRecord = Tracking::where('tracking_no', 'like', '%' . $tracking)->first();
+        // Check the last 12 digits of the tracking number for matching records
+        if ($tracking) {
+            $last12Digits = substr($tracking, -12);  // Extract last 12 digits
     
-        if ($trackingRecord) {
-            // If a matching tracking number is found, auto-populate data from tracking record
-            $audit = Audit::where('tracking_id', $trackingRecord->id)->first();
+            // Find a tracking record where tracking_no ends with the last 12 digits
+            $trackingRecord = Tracking::where('tracking_no', 'like', '%' . $last12Digits)->first();
     
-            if ($audit) {
-                // Check if the audit already has an associated item
-                if ($audit->item_id) {
-                    $item = Item::find($audit->item_id);
-                    
-                    // If the item exists but has no name, generate it based on the supplier name
-                    if (!$item->name) {
-                        $supplier = Supplier::find($item->supplier_id);
+            if ($trackingRecord) {
+                // If a tracking record exists, populate the audit data
+                $audit = Audit::where('tracking_id', $trackingRecord->id)->first();
     
-                        // Generate item name based on supplier
-                        if (!$supplier->name) {
-                            // If supplier name is missing, generate it (example: Supplier-<id>)
-                            $supplier->name = 'Supplier ' . $supplier->id;
-                            $supplier->save();  // Save the updated supplier
+                if ($audit) {
+                    // If the audit already has an associated item
+                    if ($audit->item_id) {
+                        $item = Item::find($audit->item_id);
+    
+                        // If the item exists but has no name, generate it based on the supplier name
+                        if (!$item->name) {
+                            $supplier = Supplier::find($item->supplier_id);
+    
+                            // Generate item name based on supplier
+                            if (!$supplier->name) {
+                                $supplier->name = 'Supplier ' . $supplier->id;
+                                $supplier->save();  // Save the updated supplier
+                            }
+    
+                            // Now generate item name based on the supplier
+                            $item->name = 'Item '.rand(1, 999);
+                            $item->save();
                         }
+                    } else {
+                        // If no item is associated with this audit, create a new Item
     
-                        // Now generate item name based on the supplier
-                        $item->name = 'Item '.rand(1, 999);
-                        $item->save();
+                        $supplierName = 'Supplier '.rand(0, 999); // Adjust as necessary
+    
+                        // Find or create the supplier
+                        $supplier = Supplier::firstOrCreate(['name' => $supplierName]);
+    
+                        // Create new Item and associate the Supplier
+                        $item = Item::create([
+                            'name' => 'Item '.rand(1, 999),
+                            'price' => '₱ '.rand(1, 5000),
+                            'supplier_id' => $supplier->id,  // Associate the Supplier
+                            'quantity' => rand(1, 100),      // Add random quantity between 1 and 100
+                        ]);
+    
+                        // Update the audit with the new item_id
+                        $audit->item_id = $item->id;
+                        $audit->save();
                     }
+    
+                    // Update the audit record with the rest of the fields
+                    $audit->status = 'Updated';
+                    $audit->serial_no = $serial;
+                    $audit->basket_no = $basket;
+                    $audit->product_control_no = $productControl;
+                    $audit->title = $title;
+                    $audit->save();
+    
+                    return redirect('/audits')->with('success', 'Audit updated successfully!');
                 } else {
-                    // If no item is associated with this audit, create a new Item
+                    // If the audit doesn't exist, create a new audit record
     
-                    // Assume you have a supplier name or identifier to associate
                     $supplierName = 'Supplier '.rand(0, 999); // Adjust as necessary
-    
-                    // Find or create the supplier
                     $supplier = Supplier::firstOrCreate(['name' => $supplierName]);
     
-                    // Create a new Item and associate the Supplier
+                    // Create new Item and associate the Supplier
                     $item = Item::create([
                         'name' => 'Item '.rand(1, 999),
-                        'price' => '₱ '.rand(1,5000),
+                        'price' => '₱ '.rand(1, 5000),
                         'supplier_id' => $supplier->id,  // Associate the Supplier
+                        'quantity' => rand(1, 100),      // Add random quantity between 1 and 100
                     ]);
     
-                    // Update the audit with the new item_id
-                    $audit->item_id = $item->id;
+                    // Create a new audit record with the new tracking ID and Item
+                    $audit = new Audit();
+                    $audit->title = $title;
+                    $audit->product_control_no = $productControl;
+                    $audit->basket_no = $basket;
+                    $audit->serial_no = $serial;
+                    $audit->status = 'Created';
+                    $audit->tracking_id = $trackingRecord->id;
+                    $audit->item_id = $item->id; // Associate the new Item
                     $audit->save();
+    
+                    return redirect('/audits')->with('success', 'Audit created successfully with new Item and existing tracking number!');
+                }
+            } else {
+                // If no matching tracking number is found, create a new tracking number
+                // Generate a random tracking number with a length of 34 digits
+                $randomDigits = '';
+                for ($i = 0; $i < 34 - strlen($tracking); $i++) {
+                    $randomDigits .= rand(0, 9);  // Append random digits
                 }
     
-                // Update the audit record with the rest of the fields
-                $audit->status = 'Updated';
-                $audit->serial_no = $serial;
-                $audit->basket_no = $basket;
-                $audit->product_control_no = $productControl;
-                $audit->title = $title;
-                $audit->save();
+                // Combine the random digits with the provided tracking number
+                $newTrackingNo = $randomDigits . $tracking;
     
-                return redirect('/audits')->with('success', 'Audit updated successfully!');
-            } else {
-                // If audit doesn't exist, create a new audit record
+                // Create new tracking record
+                $trackingRecord = new Tracking();
+                $trackingRecord->tracking_no = $newTrackingNo;
+                $trackingRecord->save();
     
-                // Find or create the supplier
+                // Create new Supplier if needed
                 $supplierName = 'Supplier '.rand(0, 999); // Adjust as necessary
                 $supplier = Supplier::firstOrCreate(['name' => $supplierName]);
     
-                // Check if the supplier's name is missing, and generate it if necessary
-                if (!$supplier->name) {
-                    $supplier->name = 'Supplier ' . $supplier->id; // Example name generation
-                    $supplier->save();
-                }
-    
-                // Create a new Item and associate the Supplier
+                // Create new Item with the new Supplier
                 $item = Item::create([
                     'name' => 'Item '.rand(1, 999),
-                    'price' => '₱ '.rand(1,5000),
-                    'supplier_id' => $supplier->id,  // Associate the Supplier
+                    'price' => '₱ '.rand(1, 5000),
+                    'supplier_id' => $supplier->id,  // Associate with Supplier
+                    'quantity' => rand(1, 100),      // Add random quantity between 1 and 100
                 ]);
     
-                // Create a new audit record with the new tracking ID and Item
+                // Create new audit record with the new tracking ID and Item
                 $audit = new Audit();
                 $audit->title = $title;
                 $audit->product_control_no = $productControl;
@@ -138,55 +201,11 @@ class AuditController extends Controller
                 $audit->item_id = $item->id; // Associate the new Item
                 $audit->save();
     
-                return redirect('/audits')->with('success', 'Audit created successfully with new Item and existing tracking number!');
+                return redirect('/audits')->with('success', 'Audit created successfully with new tracking number, Item, and Supplier!');
             }
-        } else {
-            // If no matching tracking number is found, create a new tracking number
-            // Generate 22 random digits as a string
-            $randomDigits = '';
-            $trackingdiff = 34 - strlen($tracking);
-            for ($i = 0; $i < $trackingdiff; $i++) {
-                $randomDigits .= rand(0, 9);  // Append a random number (0-9) to the string
-            }
-    
-            // Combine the random digits with the provided 12-digit string
-            $newTrackingNo = $randomDigits . $tracking;
-    
-            // Create new tracking record
-            $trackingRecord = new Tracking();
-            $trackingRecord->tracking_no = $newTrackingNo;
-            $trackingRecord->save();
-    
-            // Create new Supplier if needed
-            $supplierName = 'Supplier '.rand(0, 999); // Adjust as necessary
-            $supplier = Supplier::firstOrCreate(['name' => $supplierName]);
-    
-            // Check if the supplier's name is missing, and generate it if necessary
-            if (!$supplier->name) {
-                $supplier->name = 'Supplier ' . $supplier->id; // Example name generation
-                $supplier->save();
-            }
-    
-            // Create new Item with the new Supplier
-            $item = Item::create([
-                'name' => 'Item '.rand(1, 999),
-                'price' => '₱ '.rand(1,5000),
-                'supplier_id' => $supplier->id,  // Associate with Supplier
-            ]);
-    
-            // Create new audit record with the new tracking ID and Item
-            $audit = new Audit();
-            $audit->title = $title;
-            $audit->product_control_no = $productControl;
-            $audit->basket_no = $basket;
-            $audit->serial_no = $serial;
-            $audit->status = 'Created';
-            $audit->tracking_id = $trackingRecord->id;
-            $audit->item_id = $item->id; // Associate the new Item
-            $audit->save();
-    
-            return redirect('/audits')->with('success', 'Audit created successfully with new tracking number, Item, and Supplier!');
         }
+    
+        return redirect()->back()->with('error', 'Tracking number is missing.');
     }
     
     public function edit(Audit $audit) {
