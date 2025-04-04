@@ -28,7 +28,7 @@
         @endif
 
         <div class="w-full flex justify-between items-start gap-4">
-            <div class="w-1/2 h-full max-h-[700px] flex flex-col space-y-4 border border-gray-200 rounded-lg p-4">
+            <div class="w-1/2 h-[500px] flex flex-col space-y-4 border border-gray-200 rounded-lg p-4">
                 <h3 class="text-lg font-bold text-gray-800">Cart Summary</h3>
                 <div id="cart-items" class="space-y-4 overflow-auto flex-grow">
                     <table class="w-full border-collapse border border-gray-200">
@@ -37,22 +37,26 @@
                                 <th class="w-6/12 border border-white px-4 py-2 text-left">Name</th>
                                 <th class="w-1/12 border border-white px-4 py-2 text-right">Qty</th>
                                 <th class="w-2/12 border border-white px-4 py-2 text-right">Price</th>
+                                <th class="w-1/12 border border-white px-4 py-2 text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <td class="border border-gray-300 px-4 py-2 text-center font-bold" colspan="3">Your cart
+                            <td class="border border-gray-300 px-4 py-2 text-center font-bold" colspan="4">Your cart
                                 is empty.
                             </td>
                         </tbody>
                     </table>
                 </div>
+                <button onclick="confirmClearCart()"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-4 w-full">
+                    Clear Cart
+                </button>
             </div>
-            <div class="w-1/2 h-full max-h-[700px] flex flex-col space-y-4 border border-gray-200 rounded-lg p-4">
-                <form method="POST" action="/pos">
+            <div class="w-1/2 h-[500px] flex flex-col space-y-4 border border-gray-200 rounded-lg p-4">
+                <form method="POST" action="/pos" class="space-y-4 flex flex-col h-full">
                     <h3 class="text-lg font-bold text-gray-800">Payment Method</h3>
                     @csrf
-
-                    <div class="space-y-2">
+                    <div class="space-y-2 mt-4">
                         <label class="flex items-center space-x-2">
                             <input type="radio" name="payment_method" value="cash" checked
                                 onchange="updatePaymentMethod(this.value)"
@@ -73,6 +77,9 @@
                         </label>
                     </div>
 
+                    <!-- Flex Grow for spacing -->
+                    <div class="flex-grow"></div>
+
                     <div>
                         <h4 class="text-lg font-bold text-gray-800 flex justify-between">
                             <span>Total:</span>
@@ -83,8 +90,9 @@
                     <input type="hidden" id="payment-method-field" name="payment_method" value="cash">
                     <input type="hidden" id="cart-data" name="cart" value="">
 
+                    <!-- Checkout button positioned at the bottom -->
                     <button type="submit"
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full mt-4">
                         Checkout
                     </button>
                 </form>
@@ -148,7 +156,7 @@
             if (cart.length === 0) {
                 cartBody.innerHTML = `
                     <tr>
-                        <td class="border border-gray-300 px-4 py-2 text-center font-bold" colspan="3">Your cart is empty.</td>
+                        <td class="border border-gray-300 px-4 py-2 text-center font-bold" colspan="4">Your cart is empty.</td>
                     </tr>
                 `;
             } else {
@@ -159,6 +167,9 @@
                         <td class="border border-gray-300 px-4 py-2">${item.name}</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">${item.quantity}</td>
                         <td class="px-4 py-2 flex justify-between"><div>₱</div> <div>${formatPrice(item.price)}</div></td>
+                        <td class="border border-gray-300 px-4 py-2 text-center">
+                            <button onclick="confirmRemoveFromCart(${item.id})" class="text-red-500 hover:text-red-700">Delete</button>
+                        </td>
                     `;
                     cartBody.appendChild(row);
                 });
@@ -173,6 +184,34 @@
             document.getElementById('cart-data').value = JSON.stringify(cart); // Update the cart data
         }
 
+        function confirmRemoveFromCart(id) {
+            let confirmation = prompt("To confirm deletion, please type 'VOID'.");
+            if (confirmation === 'VOID') {
+                removeFromCart(id);
+            } else {
+                alert("Item not deleted.");
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);  // Remove item from cart by id
+            updateCartUI();
+        }
+
+        function confirmClearCart() {
+            if (cart.length === 0) {
+                alert("Your cart is empty. No need to clear.");
+                return;  // Exit the function if cart is empty
+            }
+
+            let confirmation = prompt("To clear the cart, please type 'VOID'.");
+            if (confirmation === 'VOID') {
+                clearCart();
+            } else {
+                alert("Cart not cleared.");
+            }
+        }
+
         function clearCart() {
             cart = [];
             updateCartUI();
@@ -182,6 +221,5 @@
             // Update the hidden input with the selected payment method
             document.getElementById('payment-method-field').value = value;
         }
-
     </script>
 </x-layout>
