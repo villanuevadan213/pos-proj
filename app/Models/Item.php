@@ -27,4 +27,9 @@ class Item extends Model {
     public function sale(){
         return $this->hasMany(Sale::class);
     }
+
+    public function transactionItems()
+    {
+        return $this->hasMany(TransactionItem::class);
+    }
 }

@@ -26,8 +26,8 @@ Route::get('/items/{item}/edit', [ItemController::class, 'edit'])
 Route::patch('/items/{item}', [ItemController::class, 'update']);
 Route::delete('/items/{item}', [ItemController::class, 'destroy']);
 
-Route::get('/pos', [POSController::class, 'index'])->name('pos');
-Route::post('/pos/checkout', [POSController::class, 'checkout'])->name('checkout');
+Route::get('/pos', [POSController::class, 'index']);
+Route::post('/pos', [POSController::class, 'store']);
 
 //Auth
 Route::get('/register', [RegisterUserController::class, 'create']);
