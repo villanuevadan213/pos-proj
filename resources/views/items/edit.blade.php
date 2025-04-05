@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Edit Item: {{ $item->name }}
-    </x-slot:heading>
+    </x-slot>
 
     <form method="POST" action="/items/{{ $item->id }}">
         @csrf

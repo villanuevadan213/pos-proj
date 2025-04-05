@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Create Item
-    </x-slot:heading>
+    </x-slot>
 
     <form method="POST" action="/items">
         @csrf

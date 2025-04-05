@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Item
-    </x-slot:heading>
+    </x-slot>
 
     <h2 class="font-bold text-lg">{{ $item->name }}</h2>
 

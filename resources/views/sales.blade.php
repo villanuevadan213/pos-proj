@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Sales Page
-    </x-slot:heading>
+    </x-slot>
 
     <h1>Hello from the Sales Page</h1>
 </x-layout>

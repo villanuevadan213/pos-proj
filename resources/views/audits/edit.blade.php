@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Edit Audit: {{ $audit->title }}
-    </x-slot:heading>
+    </x-slot>
 
     <form method="POST" action="/audits/{{ $audit->id }}">
         @csrf

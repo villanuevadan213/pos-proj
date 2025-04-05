@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Add Audit
-    </x-slot:heading>
+    </x-slot>
 
     <form method="POST" action="/audits">
         @if(session('success'))

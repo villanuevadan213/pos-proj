@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Register
-    </x-slot:heading>
+    </x-slot>
 
     <form method="POST" action="/register">
         @csrf

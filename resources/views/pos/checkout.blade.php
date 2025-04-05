@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Checkout Page
-    </x-slot:heading>
+    </x-slot>
 
 
 </x-layout>

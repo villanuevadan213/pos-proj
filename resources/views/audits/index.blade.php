@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Audit Page
-    </x-slot:heading>
+    </x-slot>
 
     <div class="space-y-4">
         @if(session('success') || session('error'))

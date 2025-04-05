@@ -10,9 +10,9 @@
         }
     </style>
 
-    <x-slot:heading>
+    <x-slot name="header">
         POS Page
-    </x-slot:heading>
+    </x-slot>
 
     <div class="space-y-4">
         @if(session('success') || session('error'))

@@ -1,7 +1,7 @@
 <x-layout>
-    <x-slot:heading>
+    <x-slot name="header">
         Inventory Page
-    </x-slot:heading>
+    </x-slot>
 
     <div class="space-y-4">
         @foreach ($items as $item)
