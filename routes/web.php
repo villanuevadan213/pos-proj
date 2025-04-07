@@ -4,13 +4,13 @@ use App\Http\Controllers\AuditController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\RegisterUserController;
+use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
 use App\Models\Item;
 
 Route::view('/', 'home');
 Route::view('/dashboard', 'dashboard')->middleware('auth');
-Route::view('/sales', 'sales')->middleware('auth');
 
 Route::resource('audits', AuditController::class)->middleware('auth');
 
@@ -28,6 +28,8 @@ Route::delete('/items/{item}', [ItemController::class, 'destroy'])->middleware('
 
 Route::get('/pos', [POSController::class, 'index'])->middleware('auth');
 Route::post('/pos', [POSController::class, 'store'])->middleware('auth');
+
+Route::get('/sales', [SalesController::class, 'index'])->middleware('auth');
 
 //Auth
 Route::get('/register', [RegisterUserController::class, 'create']);

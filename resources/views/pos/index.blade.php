@@ -1,6 +1,5 @@
 <x-layout>
     <style>
-        /* Apply alternating background color */
         tbody tr:nth-child(even) {
             background-color: #f9fafb;
         }
@@ -77,7 +76,6 @@
                         </label>
                     </div>
 
-                    <!-- Flex Grow for spacing -->
                     <div class="flex-grow"></div>
 
                     <div>
@@ -90,7 +88,6 @@
                     <input type="hidden" id="payment-method-field" name="payment_method" value="cash">
                     <input type="hidden" id="cart-data" name="cart" value="">
 
-                    <!-- Checkout button positioned at the bottom -->
                     <button type="submit"
                         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full mt-4">
                         Checkout
@@ -99,18 +96,17 @@
             </div>
         </div>
 
-        <div class="w-full bg-white shadow rounded-lg p-4 grid grid-cols-3 md:grid-cols-5 gap-4 flex-grow">
+        <div class="w-full grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-4 flex-grow">
             @foreach ($items as $item)
-                <div role="button" class="p-4 bg-white shadow rounded-lg flex flex-col space-y-4 h-full"
+                <div role="button" class="p-4 bg-white shadow rounded-lg flex flex-col space-y-2 h-full"
                     onclick="addToCart({{ $item->id }}, '{{ $item->name }}', {{ $item->price }}, {{ $item->quantity }})">
                     <h3 class="text-lg font-bold text-gray-800">{{ $item->name }}</h3>
                     <p class="text-sm text-gray-500">₱ {{ number_format($item->price, 2) }}</p>
                     <p class="text-sm text-gray-500">{{ $item->quantity }}</p>
-                    <div class="flex-grow"></div>
                 </div>
             @endforeach
 
-            <div>
+            <div class="col-span-1 sm:col-span-3 md:col-span-5">
                 {{ $items->links() }}
             </div>
         </div>
@@ -194,14 +190,14 @@
         }
 
         function removeFromCart(id) {
-            cart = cart.filter(item => item.id !== id);  // Remove item from cart by id
+            cart = cart.filter(item => item.id !== id);
             updateCartUI();
         }
 
         function confirmClearCart() {
             if (cart.length === 0) {
                 alert("Your cart is empty. No need to clear.");
-                return;  // Exit the function if cart is empty
+                return;
             }
 
             let confirmation = prompt("To clear the cart, please type 'VOID'.");
@@ -218,7 +214,6 @@
         }
 
         function updatePaymentMethod(value) {
-            // Update the hidden input with the selected payment method
             document.getElementById('payment-method-field').value = value;
         }
     </script>
