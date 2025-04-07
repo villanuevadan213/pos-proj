@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class ItemController extends Controller
 {
     public function index() {
-        $items = Item::with('supplier')->latest()->simplePaginate(3);
+        $items = Item::with('supplier')->latest()->simplePaginate(10);
 
         return view('items.index', [
             'items' => $items

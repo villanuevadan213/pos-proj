@@ -20,49 +20,55 @@
             {{-- <x-button href="/audits/create">Add Audit</x-button> --}}
             <x-modal></x-modal>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-2 py-1">
+                            <th scope="col"
+                                class="px-6 py-3 text-xs font-medium text-gray-900 uppercase tracking-wider text-left">
                                 Title
                             </th>
-                            <th scope="col" class="px-2 py-1">
+                            <th scope="col"
+                                class="px-6 py-3 text-xs font-medium text-gray-900 uppercase tracking-wider text-left">
                                 Name
                             </th>
-                            <th scope="col" class="px-2 py-1">
+                            <th scope="col"
+                                class="px-6 py-3 text-xs font-medium text-gray-900 uppercase tracking-wider text-left">
                                 Product Control #
                             </th>
-                            <th scope="col" class="px-2 py-1">
+                            <th scope="col"
+                                class="px-6 py-3 text-xs font-medium text-gray-900 uppercase tracking-wider text-left">
                                 Basket #
                             </th>
-                            <th scope="col" class="px-2 py-1">
+                            <th scope="col"
+                                class="px-6 py-3 text-xs font-medium text-gray-900 uppercase tracking-wider text-left">
                                 Serial #
                             </th>
-                            <th scope="col" class="px-2 py-1">
+                            <th scope="col"
+                                class="px-6 py-3 text-xs font-medium text-gray-900 uppercase tracking-wider text-left">
                                 Tracking #
                             </th>
-                            <th scope="col" class="px-2 py-1">
+                            <th scope="col"
+                                class="px-6 py-3 text-xs font-medium text-gray-900 uppercase tracking-wider text-left">
                                 Status
                             </th>
-                            {{-- <th scope="col">
-                                Action
-                            </th> --}}
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($audits as $audit)
-                            <tr
-                                class="{{ $loop->odd ? 'bg-gray-100' : 'bg-white' }} text-center border-b-2 border-gray-200">
-                                <td class="px-2 py-1 text-gray-500">{{ $audit->title }}</td>
-                                <td class="px-2 py-1 text-gray-500">{{ $audit->item->name }}</td>
-                                <td class="px-2 py-1 text-gray-500">{{ $audit->product_control_no }}</td>
-                                <td class="px-2 py-1 text-gray-500">{{ $audit->basket_no }}</td>
-                                <td class="px-2 py-1 text-gray-500">{{ $audit->serial_no }}</td>
-                                <td class="px-2 py-1 text-gray-500">{{ $audit->tracking->tracking_no }}</td>
-                                <td class="px-2 py-1 text-gray-500">{{ $audit->status }}</td>
-                                {{-- <td class="text-gray-500">
-                                    <x-button href="/audits/{{ $audit->id }}/edit">Edit</x-button>
-                                </td> --}}
+                            <tr class="hover:bg-gray-100">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $audit->title }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $audit->item->name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $audit->product_control_no }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $audit->basket_no }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $audit->serial_no }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $audit->tracking->tracking_no }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $audit->status }}</td>
                             </tr>
                         @endforeach
                     </tbody>
